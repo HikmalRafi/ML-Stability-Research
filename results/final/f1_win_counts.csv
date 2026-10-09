@@ -1,0 +1,13 @@
+dataset,winner,count
+breast_cancer,decision_tree,2
+breast_cancer,knn,42
+breast_cancer,random_forest,44
+breast_cancer,tie,12
+raisin,decision_tree,2
+raisin,knn,25
+raisin,random_forest,72
+raisin,tie,1
+wine,decision_tree,1
+wine,knn,7
+wine,random_forest,63
+wine,tie,29

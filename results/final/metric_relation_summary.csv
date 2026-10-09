@@ -1,0 +1,7 @@
+dataset,metric_relation,count,percent
+breast_cancer,same,82,82
+breast_cancer,tie_resolution,18,18
+raisin,same,88,88
+raisin,tie_resolution,12,12
+wine,same,92,92
+wine,tie_resolution,8,8

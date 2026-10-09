@@ -1,0 +1,10 @@
+dataset,ranking_status,count
+breast_cancer,consistent,42
+breast_cancer,rank_reversal,46
+breast_cancer,tie_with_overall_best,12
+raisin,consistent,72
+raisin,rank_reversal,27
+raisin,tie_with_overall_best,1
+wine,consistent,63
+wine,rank_reversal,8
+wine,tie_with_overall_best,29
