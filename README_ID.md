@@ -1,440 +1,275 @@
 # Analisis Stabilitas Model Machine Learning
 
-🇮🇩 Bahasa Indonesia | [🇬🇧 English](README.md)
+[🇬🇧 English](README.md) | [🇮🇩 Bahasa Indonesia](README_ID.md)
 
-> Analisis eksperimental terhadap kestabilan Decision Tree, K-Nearest Neighbors, dan Random Forest ketika pembagian data training dan testing divariasikan.
-
----
-
-## 📌 Gambaran Umum
-
-Model Machine Learning sering kali dievaluasi hanya menggunakan satu kali pembagian data training dan testing.
-
-Namun, perubahan random seed pada proses pembagian data dapat mengubah sampel mana yang masuk ke data training dan mana yang masuk ke data testing.
-
-Akibatnya, performa model dapat berubah walaupun dataset, algoritma, dan konfigurasi model yang digunakan tetap sama.
-
-Project penelitian ini bertujuan untuk menganalisis **kestabilan model Machine Learning terhadap variasi pembagian data training dan testing**.
-
-Pertanyaan utama penelitian ini adalah:
-
-> **Seberapa besar performa model berubah ketika pembagian data training dan testing divariasikan menggunakan random seed yang berbeda?**
-
-Tiga algoritma klasifikasi yang digunakan:
-
-- Decision Tree
-- K-Nearest Neighbors (KNN)
-- Random Forest
-
-Eksperimen dilakukan menggunakan tiga dataset klasifikasi publik:
-
-- Wine Dataset
-- Breast Cancer Wisconsin Diagnostic Dataset
-- Raisin Dataset
+Penelitian empiris mengenai pengaruh variasi pembagian data training dan testing terhadap performa klasifikasi, stabilitas model, dan konsistensi peringkat model.
 
 ---
 
-## 🎯 Tujuan Penelitian
+## Gambaran Umum
 
-Tujuan utama penelitian ini adalah:
+Model Machine Learning sering dievaluasi menggunakan satu kali pembagian data training dan testing. Namun, komposisi data training dan testing dapat berubah ketika menggunakan random seed yang berbeda. Perubahan ini dapat menghasilkan estimasi performa yang berbeda dan, dalam beberapa kasus, mengubah kesimpulan mengenai model yang memiliki performa terbaik.
 
-1. Mengevaluasi performa model pada berbagai pembagian data training dan testing.
-2. Mengukur variasi akurasi model akibat perubahan random seed.
-3. Membandingkan kestabilan Decision Tree, KNN, dan Random Forest.
-4. Mengetahui apakah model dengan rata-rata akurasi tertinggi juga merupakan model yang paling stabil.
-5. Mengamati apakah kestabilan model berubah pada dataset dengan karakteristik yang berbeda.
+Penelitian ini menganalisis **stabilitas performa algoritma klasifikasi terhadap variasi pembagian data training dan testing**.
 
----
+Eksperimen membandingkan tiga algoritma klasifikasi pada tiga dataset tabular dengan menggunakan 100 random seed untuk setiap dataset. Selain mengukur variasi performa, penelitian ini juga menganalisis apakah model dengan rata-rata skor tertinggi secara konsisten menempati peringkat pertama pada berbagai pembagian data.
 
-## 🧪 Desain Eksperimen
+### Pertanyaan Penelitian
 
-Setiap dataset diuji menggunakan prosedur eksperimen yang sama.
+> Bagaimana variasi pembagian data training dan testing memengaruhi estimasi performa klasifikasi, stabilitas model, dan konsistensi peringkat model?
 
-### Pembagian Data
+## Tujuan Penelitian
 
-```text
-Data training : 80%
-Data testing  : 20%
-```
+- Mengukur performa klasifikasi pada berbagai pembagian data training dan testing.
+- Membandingkan variasi performa menggunakan standard deviation dan range.
+- Menganalisis apakah model dengan rata-rata performa tertinggi juga merupakan model yang paling stabil.
+- Mengamati perubahan peringkat model pada berbagai pembagian data.
+- Membandingkan kesimpulan berdasarkan metrik Accuracy dan Macro F1-score.
+- Menyediakan alur eksperimen yang dapat direproduksi beserta file hasil yang dapat diakses.
 
-Stratifikasi digunakan untuk menjaga proporsi kelas antara data training dan testing.
+## Desain Eksperimen
 
-### Random Seed
-
-Setiap eksperimen dilakukan menggunakan:
-
-```text
-random_state = 1 sampai 30
-```
-
-Nilai `random_state` pada proses train-test split divariasikan, sedangkan konfigurasi utama model dibuat tetap.
-
-Dengan metode ini, eksperimen difokuskan pada pengaruh perubahan komposisi data training dan testing.
-
-### Model
-
-| Model | Konfigurasi Utama |
+| Komponen | Konfigurasi |
 |---|---|
-| Decision Tree | Random state internal model dibuat tetap |
-| KNN | K = 5 |
-| Random Forest | 100 tree, random state internal model dibuat tetap |
+| Dataset | 3 |
+| Algoritma klasifikasi | 3 |
+| Random seed | 100 per dataset |
+| Total evaluasi model | 900 |
+| Data training | 80% |
+| Data testing | 20% |
+| Metode pembagian data | Stratified train-test split |
+| Metrik utama | Accuracy dan Macro F1-score |
 
-`StandardScaler` digunakan pada KNN karena algoritma KNN menggunakan perhitungan jarak dan sensitif terhadap perbedaan skala fitur.
+Untuk setiap dataset, nilai seed yang sama digunakan pada proses pembagian data untuk ketiga algoritma. Konfigurasi model dipertahankan tetap sehingga eksperimen berfokus pada pengaruh perubahan komposisi data training dan testing.
 
----
+### Algoritma Klasifikasi
 
-## 📊 Dataset
+| Algoritma | Konfigurasi |
+|---|---|
+| Decision Tree | `random_state=42` pada model |
+| K-Nearest Neighbors (KNN) | `n_neighbors=5`, menggunakan `StandardScaler` dalam pipeline |
+| Random Forest | `n_estimators=100`, `random_state=42` pada model |
 
-### 1. Wine Dataset
+Pada KNN, `StandardScaler` ditempatkan di dalam pipeline scikit-learn agar parameter penskalaan hanya dipelajari dari data training.
 
-Dataset klasifikasi multiclass yang berisi pengukuran kimia dari sampel wine.
+Konfigurasi model dipertahankan tetap selama eksperimen. Dengan demikian, penelitian berfokus pada variasi performa akibat perubahan pembagian data, bukan optimasi hyperparameter atau variasi random seed internal model.
 
-```text
-Jumlah sampel : 178
-Jumlah fitur  : 13
-Jumlah kelas  : 3
-```
+## Dataset
 
----
+Penelitian ini menggunakan tiga dataset klasifikasi publik.
 
-### 2. Breast Cancer Wisconsin Diagnostic Dataset
+| Dataset | Jumlah Sampel | Jumlah Fitur | Jumlah Kelas | Jenis Klasifikasi |
+|---|---:|---:|---:|---|
+| Wine | 178 | 13 | 3 | Multikelas |
+| Breast Cancer Wisconsin Diagnostic | 569 | 30 | 2 | Biner |
+| Raisin | 900 | 7 | 2 | Biner |
 
-Dataset klasifikasi biner yang berisi fitur numerik yang berasal dari karakteristik inti sel.
+Dataset Wine berisi pengukuran kimia dari sampel wine. Dataset Breast Cancer Wisconsin Diagnostic berisi fitur numerik yang berasal dari karakteristik inti sel. Sementara itu, dataset Raisin berisi pengukuran geometris untuk mengklasifikasikan dua varietas kismis.
 
-```text
-Jumlah sampel : 569
-Jumlah fitur  : 30
-Jumlah kelas  : 2
-```
+## Metrik Evaluasi
 
----
+### Metrik Performa
 
-### 3. Raisin Dataset
+- **Accuracy:** proporsi sampel yang berhasil diklasifikasikan dengan benar.
+- **Macro F1-score:** rata-rata F1-score dari seluruh kelas dengan bobot yang sama untuk setiap kelas.
 
-Dataset klasifikasi biner yang berisi karakteristik geometris dari dua jenis kismis, yaitu **Kecimen** dan **Besni**.
+### Metrik Stabilitas
 
-```text
-Jumlah sampel : 900
-Jumlah fitur  : 7
-Jumlah kelas  : 2
-```
+- **Mean:** rata-rata performa dari 100 pembagian data.
+- **Median:** nilai tengah performa.
+- **Standard deviation (SD):** mengukur variasi performa antarpembagian data.
+- **Minimum dan maximum:** performa terendah dan tertinggi yang diamati.
+- **Range:** selisih antara performa tertinggi dan terendah.
 
----
+Standard deviation atau range yang lebih kecil menunjukkan variasi yang lebih rendah berdasarkan metrik tersebut. Kedua ukuran ini menggambarkan aspek stabilitas yang berbeda sehingga perlu ditafsirkan bersama rata-rata performa.
 
-## 📏 Metrik Evaluasi
+### Analisis Peringkat Model
 
-Performa dan kestabilan model dievaluasi menggunakan:
+Analisis final juga mencakup:
 
-- Mean Accuracy
-- Minimum Accuracy
-- Maximum Accuracy
-- Median Accuracy
-- Standard Deviation
-- Accuracy Range
+- **Winner counts:** frekuensi setiap model memperoleh skor tertinggi pada satu pembagian data, dengan hasil seri dicatat secara terpisah.
+- **Rank reversal:** kondisi ketika pemenang pada satu pembagian data tidak mencakup model dengan rata-rata skor keseluruhan tertinggi.
+- **Performance gap:** selisih antara skor tertinggi dan skor tertinggi kedua pada satu pembagian data.
+- **Metric agreement:** kesesuaian model atau kelompok model dengan skor tertinggi berdasarkan Accuracy dan Macro F1.
 
-### Standard Deviation
+## Hasil Eksperimen
 
-Standard deviation digunakan untuk melihat seberapa besar hasil akurasi menyebar dari nilai rata-rata.
+Tabel berikut merangkum hasil eksperimen final yang tersedia saat ini. Performa, standard deviation, dan range ditampilkan dalam persen atau poin persentase, sesuai dengan jenis ukurannya.
 
-Nilai standard deviation yang lebih kecil menunjukkan bahwa performa model lebih konsisten pada berbagai variasi train-test split.
+### Hasil Accuracy
 
-### Accuracy Range
+| Dataset | Model | Mean | SD | Range |
+|---|---|---:|---:|---:|
+| Breast Cancer | Decision Tree | 93,11% | 2,67 pp | 10,53 pp |
+| Breast Cancer | KNN | **96,62%** | **1,49 pp** | **7,02 pp** |
+| Breast Cancer | Random Forest | 96,18% | 1,62 pp | **7,02 pp** |
+| Raisin | Decision Tree | 81,27% | 2,66 pp | 13,89 pp |
+| Raisin | KNN | 85,17% | **2,14 pp** | **10,00 pp** |
+| Raisin | Random Forest | **86,09%** | 2,25 pp | 11,11 pp |
+| Wine | Decision Tree | 90,17% | 4,74 pp | 19,44 pp |
+| Wine | KNN | 96,25% | 2,51 pp | 13,89 pp |
+| Wine | Random Forest | **98,31%** | **1,89 pp** | **5,56 pp** |
 
-```text
-Range = Maximum Accuracy - Minimum Accuracy
-```
+### Hasil Macro F1-score
 
-Range yang lebih kecil menunjukkan bahwa perbedaan antara performa terbaik dan terburuk lebih kecil.
+| Dataset | Model | Mean | SD | Range |
+|---|---|---:|---:|---:|
+| Breast Cancer | Decision Tree | 92,62% | 2,82 pp | 11,13 pp |
+| Breast Cancer | KNN | **96,32%** | **1,64 pp** | 7,89 pp |
+| Breast Cancer | Random Forest | 95,89% | 1,74 pp | **7,35 pp** |
+| Raisin | Decision Tree | 81,24% | 2,67 pp | 14,10 pp |
+| Raisin | KNN | 85,14% | **2,14 pp** | **10,00 pp** |
+| Raisin | Random Forest | **86,07%** | 2,25 pp | 11,12 pp |
+| Wine | Decision Tree | 90,27% | 4,75 pp | 20,18 pp |
+| Wine | KNN | 96,35% | 2,48 pp | 13,70 pp |
+| Wine | Random Forest | **98,36%** | **1,84 pp** | **5,59 pp** |
 
----
+*pp = poin persentase. Angka tebal menunjukkan rata-rata tertinggi atau variasi terendah pada dataset dan metrik terkait, jika berlaku.*
 
-# 📈 Hasil Sementara
+### Temuan Utama
 
-## Wine Dataset
+1. **Performa rata-rata tertinggi tidak selalu berarti variasi terendah.** Pada dataset Raisin, Random Forest memiliki rata-rata skor tertinggi, sedangkan KNN memiliki standard deviation dan range lebih rendah pada Accuracy maupun Macro F1.
+2. **Hasil bergantung pada dataset.** Random Forest menghasilkan rata-rata skor tertinggi sekaligus variasi terendah pada dataset Wine. Sementara itu, KNN memperoleh rata-rata Accuracy tertinggi pada Breast Cancer.
+3. **Penilaian stabilitas dapat bergantung pada metrik yang digunakan.** Pada Breast Cancer, KNN memiliki standard deviation lebih rendah, sedangkan Random Forest memiliki range Macro F1 yang sedikit lebih kecil.
+4. **Peringkat model dapat berubah antarpembagian data.** Model dengan rata-rata skor keseluruhan tertinggi tidak selalu menjadi pemenang pada setiap pembagian data.
 
-| Model | Mean Accuracy | Minimum | Maximum | Std. Dev. | Range |
-|---|---:|---:|---:|---:|---:|
-| Decision Tree | 90.93% | 80.56% | 97.22% | ~3.86% | 16.66% |
-| KNN | 96.57% | 91.67% | 100.00% | 2.15% | 8.33% |
-| Random Forest | **98.61%** | 94.44% | 100.00% | **1.59%** | **5.56%** |
+Temuan tersebut hanya berlaku untuk dataset dan konfigurasi yang diuji dalam penelitian ini. Hasilnya tidak dapat langsung digunakan untuk menetapkan peringkat universal bagi algoritma yang dibandingkan.
 
-Pada Wine Dataset, Random Forest menghasilkan rata-rata akurasi tertinggi sekaligus menunjukkan kestabilan terbaik.
+## Analisis Rank Reversal
 
----
+Tabel berikut menunjukkan jumlah pembagian data ketika pemenang pada pembagian tersebut tidak mencakup model dengan rata-rata skor keseluruhan tertinggi.
 
-## Breast Cancer Wisconsin Diagnostic Dataset
+| Dataset | Accuracy | Macro F1 |
+|---|---:|---:|
+| Breast Cancer | 31 / 100 | 46 / 100 |
+| Raisin | 25 / 100 | 27 / 100 |
+| Wine | 5 / 100 | 8 / 100 |
 
-| Model | Mean Accuracy | Minimum | Maximum | Std. Dev. | Range |
-|---|---:|---:|---:|---:|---:|
-| Decision Tree | 92.92% | 86.84% | 97.37% | 3.17% | 10.53% |
-| KNN | **97.16%** | 92.98% | 99.12% | 1.41% | 6.14% |
-| Random Forest | 96.32% | **93.86%** | 99.12% | **1.39%** | **5.26%** |
+Jumlah tersebut tidak memasukkan kasus seri yang masih melibatkan model dengan rata-rata skor keseluruhan tertinggi. Hasil ini menunjukkan bahwa kesimpulan mengenai model terbaik dapat bergantung pada pembagian data tertentu, terutama pada beberapa dataset dan metrik evaluasi.
 
-KNN memiliki rata-rata akurasi tertinggi, sedangkan Random Forest menunjukkan kestabilan yang sedikit lebih baik.
-
----
-
-## Raisin Dataset
-
-| Model | Mean Accuracy | Minimum | Maximum | Std. Dev. | Range |
-|---|---:|---:|---:|---:|---:|
-| Decision Tree | 80.74% | 75.00% | 84.44% | 2.46% | 9.44% |
-| KNN | 85.00% | 81.11% | 89.44% | **2.24%** | **8.33%** |
-| Random Forest | **85.85%** | 81.11% | **90.00%** | 2.39% | 8.89% |
-
-Random Forest menghasilkan rata-rata akurasi tertinggi, sedangkan KNN menunjukkan kestabilan yang sedikit lebih baik.
-
----
-
-## 🔎 Pengamatan Sementara
-
-Hasil eksperimen menunjukkan bahwa performa model dapat berubah ketika pembagian data training dan testing berubah.
-
-Eksperimen juga menunjukkan bahwa:
-
-> **Model dengan rata-rata akurasi tertinggi belum tentu merupakan model yang paling stabil.**
-
-Pengamatan sementara:
-
-```text
-Wine
-Random Forest → Akurasi tertinggi + stabilitas terbaik
-
-Breast Cancer
-KNN           → Rata-rata akurasi tertinggi
-Random Forest → Stabilitas terbaik
-
-Raisin
-Random Forest → Rata-rata akurasi tertinggi
-KNN           → Stabilitas terbaik
-```
-
-Hasil ini masih bersifat sementara dan tidak dapat digunakan sebagai kesimpulan universal mengenai algoritma yang diuji.
-
-Hasil hanya menggambarkan dataset dan konfigurasi eksperimen yang digunakan pada penelitian ini.
-
----
-
-## 📁 Struktur Project
+## Struktur Repository
 
 ```text
 ML-Stability-Research/
-│
 ├── data/
-│
+│   ├── raisin/
+│   └── wine/
 ├── notebooks/
-│   ├── wine/
-│   │   ├── 01_wine_exploration.ipynb
-│   │   ├── 02_wine_decision_tree.ipynb
-│   │   ├── 03_wine_knn.ipynb
-│   │   ├── 04_wine_random_forest.ipynb
-│   │   └── 05_wine_comparison.ipynb
-│   │
+│   ├── final_experiment/
+│   │   ├── 01_final_experiment.ipynb
+│   │   └── 02_final_analysis.ipynb
 │   ├── breast_cancer/
-│   │   ├── 01_breast_cancer_exploration.ipynb
-│   │   ├── 02_breast_cancer_decision_tree.ipynb
-│   │   ├── 03_breast_cancer_knn.ipynb
-│   │   ├── 04_breast_cancer_random_forest.ipynb
-│   │   └── 05_breast_cancer_comparison.ipynb
-│   │
-│   └── raisin/
-│       ├── 01_raisin_exploration.ipynb
-│       ├── 02_raisin_decision_tree.ipynb
-│       ├── 03_raisin_knn.ipynb
-│       ├── 04_raisin_random_forest.ipynb
-│       └── 05_raisin_comparison.ipynb
-│
+│   ├── raisin/
+│   └── wine/
 ├── results/
-│   ├── wine/
+│   ├── final/
 │   ├── breast_cancer/
-│   └── raisin/
-│
-├── src/
-│
+│   ├── raisin/
+│   └── wine/
+├── LICENSE
 ├── README.md
-├── README_ID.md
-├── requirements.txt
-└── .gitignore
+└── README_ID.md
 ```
 
----
+Notebook pada masing-masing dataset berisi eksplorasi dan eksperimen sebelumnya. Notebook di dalam folder `final_experiment` menjadi titik awal utama untuk menjalankan dan menganalisis eksperimen final.
 
-## 🔄 Alur Penelitian
+## Menjalankan Ulang Eksperimen
 
-```text
-Dataset
-   │
-   ▼
-Eksplorasi Data
-   │
-   ▼
-Pemisahan Fitur dan Label
-   │
-   ▼
-30 Train-Test Split
-(random_state 1–30)
-   │
-   ├───────────────┬───────────────┐
-   ▼               ▼               ▼
-Decision Tree     KNN        Random Forest
-   │               │               │
-   └───────────────┴───────────────┘
-                   │
-                   ▼
-             Hasil Akurasi
-                   │
-                   ▼
-           Analisis Statistik
-                   │
-        ┌──────────┼──────────┐
-        ▼          ▼          ▼
-       Mean      Std Dev     Range
-                   │
-                   ▼
-        Perbandingan Stabilitas
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/HikmalRafi/ML-Stability-Research.git
+cd ML-Stability-Research
 ```
 
----
-
-## ✅ Progress
-
-### Eksperimen Dataset
-
-- [x] Wine Dataset
-  - [x] Eksplorasi data
-  - [x] Decision Tree
-  - [x] KNN
-  - [x] Random Forest
-  - [x] Perbandingan model
-
-- [x] Breast Cancer Wisconsin Diagnostic Dataset
-  - [x] Eksplorasi data
-  - [x] Decision Tree
-  - [x] KNN
-  - [x] Random Forest
-  - [x] Perbandingan model
-
-- [x] Raisin Dataset
-  - [x] Eksplorasi data
-  - [x] Decision Tree
-  - [x] KNN
-  - [x] Random Forest
-  - [x] Perbandingan model
-
-### Analisis Penelitian
-
-- [ ] Perbandingan lintas dataset
-- [ ] Visualisasi gabungan
-- [ ] Penambahan metrik evaluasi
-- [ ] Analisis signifikansi statistik
-- [ ] Interpretasi kestabilan model
-- [ ] Perbandingan dengan penelitian terdahulu
-
-### Artikel Ilmiah
-
-- [ ] Pendahuluan
-- [ ] Tinjauan pustaka
-- [ ] Metodologi
-- [ ] Hasil
-- [ ] Pembahasan
-- [ ] Kesimpulan
-- [ ] Formatting manuskrip
-- [ ] Review akhir
-- [ ] Submission jurnal
-
----
-
-## 🛠 Teknologi
-
-Project ini menggunakan:
-
-- Python
-- Pandas
-- NumPy
-- Scikit-learn
-- Matplotlib
-- Jupyter Notebook
-- Visual Studio Code
-- Git
-- GitHub
-
----
-
-## ⚙️ Setup Environment
-
-Membuat virtual environment:
+### 2. Buat Virtual Environment
 
 ```bash
 python3 -m venv .venv
-```
-
-Aktifkan virtual environment pada Linux:
-
-```bash
 source .venv/bin/activate
 ```
 
-Install dependency:
+Pada Windows, aktifkan environment menggunakan:
 
-```bash
-pip install -r requirements.txt
+```powershell
+.venv\Scripts\activate
 ```
 
-Jalankan Jupyter Lab:
+### 3. Instal Dependensi
 
 ```bash
-jupyter lab
+python -m pip install --upgrade pip
+python -m pip install numpy pandas scikit-learn matplotlib jupyter
 ```
 
----
+### 4. Jalankan Notebook Secara Berurutan
 
-## ♻️ Reproducibility
+1. Buka [`01_final_experiment.ipynb`](notebooks/final_experiment/01_final_experiment.ipynb), lalu jalankan seluruh sel untuk melakukan eksperimen.
+2. Buka [`02_final_analysis.ipynb`](notebooks/final_experiment/02_final_analysis.ipynb), lalu jalankan seluruh sel untuk menganalisis hasil eksperimen.
 
-Eksperimen dirancang agar dapat direproduksi.
+Jalankan Jupyter Notebook dengan perintah:
 
-Parameter penting seperti:
+```bash
+jupyter notebook
+```
 
-- Rasio train-test
-- Random seed
-- Konfigurasi model
-- Prosedur preprocessing
+Jalankan notebook eksperimen sebelum notebook analisis ketika ingin menghasilkan ulang hasil penelitian. Notebook analisis bergantung pada file output eksperimen.
 
-didokumentasikan dan dibuat konsisten selama eksperimen.
+Untuk reproduksibilitas yang lebih ketat, gunakan konfigurasi yang terdokumentasi serta versi dependensi yang sama dengan lingkungan eksperimen asli. Repository saat ini belum menyertakan file dependensi dengan versi yang dikunci.
 
-Hasil mentah eksperimen juga disimpan dalam format CSV di dalam folder `results/`.
+## File Hasil dan Data
 
----
+Hasil utama eksperimen tersimpan di folder [`results/final/`](results/final/).
 
-## 🚧 Status Penelitian
+| File | Deskripsi |
+|---|---|
+| [`final_experiment_results.csv`](results/final/final_experiment_results.csv) | Hasil mentah seluruh evaluasi model |
+| [`accuracy_summary.csv`](results/final/accuracy_summary.csv) | Statistik deskriptif Accuracy |
+| [`macro_f1_summary.csv`](results/final/macro_f1_summary.csv) | Statistik deskriptif Macro F1 |
+| [`accuracy_win_counts.csv`](results/final/accuracy_win_counts.csv) | Jumlah pemenang dan seri berdasarkan Accuracy |
+| [`f1_win_counts.csv`](results/final/f1_win_counts.csv) | Jumlah pemenang dan seri berdasarkan Macro F1 |
+| [`accuracy_rank_reversal_summary.csv`](results/final/accuracy_rank_reversal_summary.csv) | Konsistensi peringkat berdasarkan Accuracy |
+| [`f1_rank_reversal_summary.csv`](results/final/f1_rank_reversal_summary.csv) | Konsistensi peringkat berdasarkan Macro F1 |
+| [`accuracy_gap_summary.csv`](results/final/accuracy_gap_summary.csv) | Selisih skor antarmodel teratas berdasarkan Accuracy |
+| [`f1_gap_summary.csv`](results/final/f1_gap_summary.csv) | Selisih skor antarmodel teratas berdasarkan Macro F1 |
 
-> **Status: Penelitian Aktif / Work in Progress**
+File CSV tambahan berisi analisis performance gap tanpa hasil seri, ringkasan selisih skor pemenang, dan perbandingan antara kedua metrik evaluasi.
 
-Hasil saat ini masih bersifat sementara dan dapat dikembangkan atau diperbaiki sebelum penyusunan manuskrip ilmiah final.
+## Keterbatasan Penelitian
 
-Tahap selanjutnya dapat mencakup penambahan metrik evaluasi, pengujian statistik, analisis lintas dataset, dan validasi metodologi penelitian.
+Penelitian ini memiliki beberapa keterbatasan:
 
----
+- Hanya tiga dataset dan tiga algoritma klasifikasi yang diuji.
+- Hyperparameter model dipertahankan tetap dan tidak dioptimalkan secara terpisah untuk setiap dataset.
+- Hasil mengukur variasi performa akibat perubahan pembagian data pada konfigurasi yang digunakan, bukan menetapkan peringkat algoritma yang berlaku secara universal.
+- Pembagian data berulang dapat saling tumpang tindih sehingga hasilnya belum tentu merupakan 100 observasi yang independen. Skor tersebut tidak boleh diperlakukan sebagai 100 observasi independen untuk pengujian inferensial sederhana.
+- Temuan dapat berbeda apabila menggunakan dataset, rasio pembagian data, metode preprocessing, konfigurasi model, atau prosedur evaluasi yang berbeda.
 
-## 👤 Penulis
+Keterbatasan tersebut perlu dipertimbangkan ketika menafsirkan hasil maupun mengembangkan penelitian lebih lanjut.
+
+## Status Penelitian
+
+**Tahap saat ini:** Output eksperimen final dan analisis deskriptif telah tersedia; penyusunan manuskrip ilmiah sedang dipersiapkan.
+
+Ruang lingkup penelitian saat ini berfokus pada variasi performa akibat pembagian data, konsistensi peringkat model, serta hubungan antara rata-rata performa dan stabilitas. Perubahan metodologi selanjutnya sebaiknya dilakukan hanya jika menjawab pertanyaan penelitian yang jelas atau didasarkan pada masukan yang beralasan dari dosen pembimbing maupun reviewer.
+
+## Penulis
 
 **Fatih Hikmal Rafi**
 
 Mahasiswa S1 Teknik Informatika
 
 Bidang minat:
-
 - Machine Learning
+- Reproducible Machine Learning
 - Embedded Systems
 - TinyML
 - Internet of Things
-- Reproducible Machine Learning
 
----
+## Lisensi
 
-## ⚠️ Disclaimer
+Lihat file [`LICENSE`](LICENSE) untuk mengetahui ketentuan lisensi repository ini. Ketentuan lisensi masing-masing dataset dapat berbeda dari lisensi perangkat lunak repository.
 
-Repository ini dibuat untuk kepentingan akademik dan penelitian.
+## Disclaimer
 
-Breast Cancer Wisconsin Diagnostic Dataset hanya digunakan sebagai benchmark Machine Learning.
-
-Eksperimen dalam repository ini **tidak ditujukan untuk memberikan diagnosis medis maupun rekomendasi klinis**.
+Repository ini dibuat untuk kepentingan akademik dan penelitian. Dataset Breast Cancer Wisconsin Diagnostic hanya digunakan sebagai benchmark Machine Learning. Eksperimen ini **tidak ditujukan untuk diagnosis medis maupun pemberian rekomendasi klinis**.
